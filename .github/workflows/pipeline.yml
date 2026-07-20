@@ -52,7 +52,7 @@ jobs:
           POLARIS_SERVER_URL: ${{ steps.target.outputs.server_url }}
           POLARIS_ACCESS_TOKEN: ${{ steps.target.outputs.access_token }}
         run: |
-          curl -sSL "$POLARIS_SERVER_URL/api/tools/polaris_cli-linux64.zip" -o polaris_cli.zip
+          curl -sSL -H "Authorization: Bearer $POLARIS_ACCESS_TOKEN" "$POLARIS_SERVER_URL/api/tools/polaris_cli-linux64.zip" -o polaris_cli.zip
           unzip -q polaris_cli.zip -d polaris_cli
           echo "$(pwd)/polaris_cli/$(ls polaris_cli)/bin" >> "$GITHUB_PATH"
 
