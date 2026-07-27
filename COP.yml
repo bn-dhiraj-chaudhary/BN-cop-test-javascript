@@ -1,8 +1,16 @@
 # Coverity on Polaris (COP) capture/analyze configuration for cop-test-javascript.
 # JavaScript is buildless for Coverity capture, so no build/clean commands are required.
+version: "1"
+serverUrl: https://csprod.polaris.synopsys.com
+project:
+  name: ${scm.git.repo}
+  branch: ${scm.git.branch}
 capture:
-  files:
-    exclude-regex: (node_modules|\.git)/.*
+  fileSystem:
+    javascript:
+      files:
+      - directory: ${project.projectDir}
+        excludeRegex: (node_modules|\.git)/.*
   languages:
     include: [javascript]
 analyze:
