@@ -50,6 +50,19 @@ pipeline {
         }
         
     }
+    parameters {
+    string(
+        name: 'NODE',
+        defaultValue: 'any',
+        description: 'Jenkins node/agent label to run the pipeline on.'
+    )
+}
+
+agent {
+    node {
+        label "${params.NODE}"
+    }
+}
 
     post {
         success {
