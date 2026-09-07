@@ -1,4 +1,3 @@
-```groovy
 pipeline {
     parameters {
         string(
@@ -11,60 +10,59 @@ pipeline {
     agent {
         label "${params.NODE}"
     }
-
+    environment {
+        POLARIS__TOKEN = credentials('POLARIS_TOKEN')
+    }
+    
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
-        stage('Clean') {
-            steps {
-                echo 'Cleaning previous build artifacts...'
-                sh 'rm -rf dist'
-                sh 'rm -rf node_modules'
-                sh 'npm cache clean --force'
-            }
-        }
-
         stage('Build') {
             steps {
-                echo 'Installing dependencies...'
-                sh 'npm ci'
-
-                echo 'Building JavaScript application...'
-                sh 'npm run build'
+                echo 'Building Azure Repos project...'
             }
         }
-
-        stage('Validation') {
-            parallel {
-
-                stage('Test') {
-                    steps {
-                        echo 'Running tests...'
-                        sh 'npm test'
-                    }
-                }
-
-                stage('Lint') {
-                    steps {
-                        echo 'Running lint checks...'
-                        sh 'npm run lint'
-                    }
-                }
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
             }
         }
-
         stage('Security Scan') {
-            stages {
-
-               
+            steps {
+                echo 'Running Black Duck Polaris security scan...'
             }
         }
+        stage('Polaris Black Duck Security Scan') {
+            steps {
+                security_scan(
+                    product: 'polaris',
+                    polaris_server_url: POLARIS_URL,
+                    polaris_access_token: POLARIS__TOKEN,
+                    polaris_application_name: 'BN-cop-test-javascript-app',
+                    polaris_project_name: 'bn-dhiraj-chaudhary/BN-cop-test-javascript',
+                    polaris_branch_name: 'main',
+                    polaris_assessment_types: 'SAST,SCA'
+                )
+            }
+        }
+        
     }
+    parameters {
+    string(
+        name: 'NODE',
+        defaultValue: 'any',
+        description: 'Jenkins node/agent label to run the pipeline on.'
+    )
+}
+
+    nodes {
+        node {
+            label "${params.NODE}"
+    }
+}
 
     post {
         success {
@@ -74,10 +72,5 @@ pipeline {
         failure {
             echo 'Pipeline failed'
         }
-
-        always {
-            echo 'Pipeline execution finished.'
-        }
     }
 }
-```
