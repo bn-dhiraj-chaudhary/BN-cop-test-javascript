@@ -1,4 +1,3 @@
-```groovy
 pipeline {
     parameters {
         string(
@@ -11,85 +10,59 @@ pipeline {
     agent {
         label "${params.NODE}"
     }
-
     environment {
         POLARIS__TOKEN = credentials('POLARIS_TOKEN')
-        APP_ENV = 'ci'
     }
-
+    
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
-        stage('Environment Setup') {
+        stage('Build') {
             steps {
-                sh '''
-                    echo "Setting up Jenkins workspace..."
-                    export CI_MODE=true
-                    mkdir -p workspace-data
-                    mkdir -p logs
-                    touch logs/pipeline.log
-                    echo "Environment setup completed."
-                '''
+                echo 'Building Azure Repos project...'
             }
         }
-
-        stage('File Operations') {
-            parallel {
-
-                stage('Create Configuration') {
-                    steps {
-                        sh '''
-                            echo "Creating configuration file..."
-                            mkdir -p config
-                            echo "environment=${APP_ENV}" > config/build.properties
-                            echo "workspace=${WORKSPACE}" >> config/build.properties
-                            cat config/build.properties
-                        '''
-                    }
-                }
-
-                stage('Collect Repository Information') {
-                    steps {
-                        sh '''
-                            echo "Collecting repository information..."
-                            pwd
-                            echo "Files in workspace:"
-                            ls -la
-                            find . -maxdepth 2 -type f | sort
-                        '''
-                    }
-                }
-
-                stage('Prepare Logs') {
-                    steps {
-                        sh '''
-                            echo "Preparing log files..."
-                            mkdir -p logs
-                            echo "Pipeline started at $(date)" > logs/pipeline.log
-                            echo "Jenkins job: ${JOB_NAME}" >> logs/pipeline.log
-                            echo "Build number: ${BUILD_NUMBER}" >> logs/pipeline.log
-                            cat logs/pipeline.log
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Workspace Cleanup') {
+        stage('Test') {
             steps {
-                sh '''
-                    echo "Removing temporary files..."
-                    rm -rf workspace-data
-                    echo "Temporary workspace data removed."
-                '''
+                echo 'Running tests...'
             }
         }
+        stage('Security Scan') {
+            steps {
+                echo 'Running Black Duck Polaris security scan...'
+            }
+        }
+        stage('Polaris Black Duck Security Scan') {
+            steps {
+                security_scan(
+                    product: 'polaris',
+                    polaris_server_url: POLARIS_URL,
+                    polaris_access_token: POLARIS__TOKEN,
+                    polaris_application_name: 'BN-cop-test-javascript-app',
+                    polaris_project_name: 'bn-dhiraj-chaudhary/BN-cop-test-javascript',
+                    polaris_branch_name: 'main',
+                    polaris_assessment_types: 'SAST,SCA'
+                )
+            }
+        }
+        
     }
+    parameters {
+    string(
+        name: 'NODE',
+        defaultValue: 'any',
+        description: 'Jenkins node/agent label to run the pipeline on.'
+    )
+}
+
+    nodes {
+        node {
+            label "${params.NODE}"
+    }
+}
 
     post {
         success {
@@ -99,14 +72,5 @@ pipeline {
         failure {
             echo 'Pipeline failed'
         }
-
-        always {
-            sh '''
-                echo "Final workspace contents:"
-                ls -la
-            '''
-            echo 'Pipeline execution finished.'
-        }
     }
 }
-```
