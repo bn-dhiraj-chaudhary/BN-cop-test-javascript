@@ -12,6 +12,10 @@ pipeline {
         label "${params.NODE}"
     }
 
+    environment {
+        POLARIS__TOKEN = credentials('POLARIS_TOKEN')
+    }
+
     stages {
 
         stage('Checkout') {
@@ -21,17 +25,37 @@ pipeline {
         }
 
         stage('Build & Test') {
-            parallel {
+            stages {
 
-                stage('Build') {
+                stage('Install Dependencies') {
                     steps {
-                        echo 'Building Azure Repos project...'
+                        sh 'npm ci'
                     }
                 }
 
-                stage('Test') {
+                stage('Build') {
                     steps {
-                        echo 'Running tests...'
+                        echo 'Building JavaScript project...'
+                        sh 'npm run build'
+                    }
+                }
+
+                stage('Test & Quality') {
+                    parallel {
+
+                        stage('Unit Tests') {
+                            steps {
+                                echo 'Running unit tests...'
+                                sh 'npm test'
+                            }
+                        }
+
+                        stage('Lint') {
+                            steps {
+                                echo 'Running lint checks...'
+                                sh 'npm run lint'
+                            }
+                        }
                     }
                 }
             }
@@ -39,6 +63,22 @@ pipeline {
 
         stage('Security Scan') {
             stages {
+
+                stage('Polaris Black Duck Security Scan') {
+                    steps {
+                        echo 'Running Black Duck Polaris security scan...'
+
+                        security_scan(
+                            product: 'polaris',
+                            polaris_server_url: POLARIS_URL,
+                            polaris_access_token: POLARIS__TOKEN,
+                            polaris_application_name: 'BN-cop-test-javascript-app',
+                            polaris_project_name: 'bn-dhiraj-chaudhary/BN-cop-test-javascript',
+                            polaris_branch_name: 'main',
+                            polaris_assessment_types: 'SAST,SCA'
+                        )
+                    }
+                }
 
                 stage('Security Scan Result') {
                     steps {
