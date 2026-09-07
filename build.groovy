@@ -58,7 +58,7 @@ pipeline {
     )
 }
 
-agent {
+nodes {
     node {
         label "${params.NODE}"
     }
