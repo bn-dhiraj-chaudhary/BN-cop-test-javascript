@@ -14,6 +14,7 @@ pipeline {
 
     environment {
         POLARIS__TOKEN = credentials('POLARIS_TOKEN')
+        APP_ENV = 'ci'
     }
 
     stages {
@@ -24,67 +25,68 @@ pipeline {
             }
         }
 
-        stage('Build & Test') {
-            stages {
+        stage('Environment Setup') {
+            steps {
+                sh '''
+                    echo "Setting up Jenkins workspace..."
+                    export CI_MODE=true
+                    mkdir -p workspace-data
+                    mkdir -p logs
+                    touch logs/pipeline.log
+                    echo "Environment setup completed."
+                '''
+            }
+        }
 
-                stage('Install Dependencies') {
+        stage('File Operations') {
+            parallel {
+
+                stage('Create Configuration') {
                     steps {
-                        sh 'npm ci'
+                        sh '''
+                            echo "Creating configuration file..."
+                            mkdir -p config
+                            echo "environment=${APP_ENV}" > config/build.properties
+                            echo "workspace=${WORKSPACE}" >> config/build.properties
+                            cat config/build.properties
+                        '''
                     }
                 }
 
-                stage('Build') {
+                stage('Collect Repository Information') {
                     steps {
-                        echo 'Building JavaScript project...'
-                        sh 'npm run build'
+                        sh '''
+                            echo "Collecting repository information..."
+                            pwd
+                            echo "Files in workspace:"
+                            ls -la
+                            find . -maxdepth 2 -type f | sort
+                        '''
                     }
                 }
 
-                stage('Test & Quality') {
-                    parallel {
-
-                        stage('Unit Tests') {
-                            steps {
-                                echo 'Running unit tests...'
-                                sh 'npm test'
-                            }
-                        }
-
-                        stage('Lint') {
-                            steps {
-                                echo 'Running lint checks...'
-                                sh 'npm run lint'
-                            }
-                        }
+                stage('Prepare Logs') {
+                    steps {
+                        sh '''
+                            echo "Preparing log files..."
+                            mkdir -p logs
+                            echo "Pipeline started at $(date)" > logs/pipeline.log
+                            echo "Jenkins job: ${JOB_NAME}" >> logs/pipeline.log
+                            echo "Build number: ${BUILD_NUMBER}" >> logs/pipeline.log
+                            cat logs/pipeline.log
+                        '''
                     }
                 }
             }
         }
 
-        stage('Security Scan') {
-            stages {
-
-                stage('Polaris Black Duck Security Scan') {
-                    steps {
-                        echo 'Running Black Duck Polaris security scan...'
-
-                        security_scan(
-                            product: 'polaris',
-                            polaris_server_url: POLARIS_URL,
-                            polaris_access_token: POLARIS__TOKEN,
-                            polaris_application_name: 'BN-cop-test-javascript-app',
-                            polaris_project_name: 'bn-dhiraj-chaudhary/BN-cop-test-javascript',
-                            polaris_branch_name: 'main',
-                            polaris_assessment_types: 'SAST,SCA'
-                        )
-                    }
-                }
-
-                stage('Security Scan Result') {
-                    steps {
-                        echo 'Polaris security scan completed.'
-                    }
-                }
+        stage('Workspace Cleanup') {
+            steps {
+                sh '''
+                    echo "Removing temporary files..."
+                    rm -rf workspace-data
+                    echo "Temporary workspace data removed."
+                '''
             }
         }
     }
@@ -99,6 +101,10 @@ pipeline {
         }
 
         always {
+            sh '''
+                echo "Final workspace contents:"
+                ls -la
+            '''
             echo 'Pipeline execution finished.'
         }
     }
