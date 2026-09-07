@@ -16,23 +16,7 @@ pipeline {
             steps {
                 checkout scm
             }
-        }
-        stage('Build') {
-            steps {
-                echo 'Building Azure Repos project...'
-            }
-        }
-        stage('Test') {
-            steps {
-                echo 'Running tests...'
-            }
-        }
-        stage('Security Scan') {
-            steps {
-                echo 'Running Black Duck Polaris security scan...'
-            }
-        }
-        
+        }  
     }
     parameters {
     string(
