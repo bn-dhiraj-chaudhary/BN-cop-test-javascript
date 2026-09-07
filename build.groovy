@@ -58,9 +58,9 @@ pipeline {
     )
 }
 
-nodes {
-    node {
-        label "${params.NODE}"
+    nodes {
+        node {
+            label "${params.NODE}"
     }
 }
 
