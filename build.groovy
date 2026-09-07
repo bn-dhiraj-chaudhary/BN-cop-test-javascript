@@ -1,5 +1,15 @@
 pipeline {
-    agent any
+    parameters {
+        string(
+            name: 'NODE',
+            defaultValue: 'any',
+            description: 'Jenkins node/agent label to run the pipeline on.'
+        )
+    }
+
+    agent {
+        label "${params.NODE}"
+    }
     environment {
         POLARIS__TOKEN = credentials('POLARIS_TOKEN')
     }
