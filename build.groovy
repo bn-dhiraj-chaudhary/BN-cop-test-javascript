@@ -1,46 +1,37 @@
-properties([
-    parameters([
-        string(
-            name: 'NODE',
-            defaultValue: 'any',
-            description: 'Jenkins node/agent label to run the pipeline on.'
-        )
-    ])
-])
-
-node(params.NODE) {
-
-    withCredentials([
-        string(
-            credentialsId: 'POLARIS_TOKEN',
-            variable: 'POLARIS__TOKEN'
-        )
-    ]) {
-
-        try {
-
-            stage('Checkout') {
+pipeline {
+    agent any
+    
+    stages {
+        stage('Checkout') {
+            steps {
                 checkout scm
             }
-
-            stage('Build') {
+        }
+        stage('Build') {
+            steps {
                 echo 'Building Azure Repos project...'
             }
-
-            stage('Test') {
+        }
+        stage('Test') {
+            steps {
                 echo 'Running tests...'
             }
-
-            stage('Security Scan') {
+        }
+        stage('Security Scan') {
+            steps {
                 echo 'Running Black Duck Polaris security scan...'
             }
+        }
+        
+    }
 
+    post {
+        success {
             echo 'Pipeline completed successfully'
+        }
 
-        } catch (Exception e) {
-
+        failure {
             echo 'Pipeline failed'
-            throw e
         }
     }
 }
