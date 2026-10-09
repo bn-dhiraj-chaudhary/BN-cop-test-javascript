@@ -1,0 +1,33 @@
+name: quality ci
+ 
+on:
+  workflow_dispatch:
+ 
+jobs:
+  coverity-on-polaris:
+    name: Coverity on Polaris Scan
+    runs-on: ubuntu-latest
+ 
+    steps:
+      - name: Checkout Source
+        uses: actions/checkout@v6
+ 
+      - name: Download Polaris CLI
+        shell: bash
+        run: |
+          set -euo pipefail
+ 
+          echo "Downloading Polaris CLI..."
+ 
+          curl -fsSL -o polaris.zip \
+            "$POLARIS_SERVER_URL/api/tools/polaris_cli-linux64.zip"
+ 
+          unzip -o -j polaris.zip
+          chmod +x polaris
+ 
+      - name: Run Polaris Scan
+        shell: bash
+        run: |
+          set -euo pipefail
+ 
+          ./polaris analyze -w

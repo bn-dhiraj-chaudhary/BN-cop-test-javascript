@@ -1,0 +1,33 @@
+version: "1"
+project:
+  name: demo-java
+  branch: ${scm.git.branch}
+  revision:
+    name: ${scm.git.commit}
+    date: ${scm.git.commit.date}
+ 
+capture:
+  build:
+    clean-command: mvn clean
+    build-command: mvn install
+ 
+analyze:
+  mode: central
+  coverity:
+    cov-analyze: [
+    "--aggressiveness-level", "high",
+    "--all",
+    "--brakeman-aggressiveness-level", "high",
+    "--concurrency",
+    "--enable-audit-mode",
+    "--enable-constraint-fpp",
+    "--enable", "HARDCODED_CREDENTIALS",
+    "--enable", "ORM_LOST_UPDATE",
+    "--security",
+    "--webapp-security-aggressiveness-level", "high",
+    "--webapp-security"
+    ]
+install:
+  coverity:
+    version: 2024.6.0
+serverUrl: https://csprod.polaris.blackduck.com
