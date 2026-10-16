@@ -3,10 +3,6 @@ name: quality-check
 on:
   workflow_dispatch:
 
-jobs:
-  validation:
-    name: Repository Validation
-    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Source
