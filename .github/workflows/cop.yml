@@ -3,7 +3,3 @@ name: quality ci
 on:
   workflow_dispatch:
  
-jobs:
-  coverity-on-polaris:
-    name: Coverity on Polaris Scan
-    runs-on: ubuntu-latest
