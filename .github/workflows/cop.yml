@@ -1,7 +1,7 @@
 name: quality-check
 
 on:
-  workflow_dispatch:
+  
 
 
       - name: Display Repository Information
