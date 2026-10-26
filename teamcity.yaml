@@ -1,0 +1,19 @@
+version: 1.0
+jobs:
+  Build_and_Scan:
+    name: "Build and Security Scan"
+    parameters:
+      env.POLARIS_API_TOKEN: "xxxxx"
+      env.POLARIS_SERVER_URL: "xxxxx"
+    runs-on: Linux-Medium
+    steps:
+      - name: "Compile Application"
+        type: script
+        script-content: |
+          echo "Install dependencies..."
+          npm install
+      - name: "Run Unit Tests"
+        type: script
+        script-content: |
+          echo "Running tests..."
+          npm test
