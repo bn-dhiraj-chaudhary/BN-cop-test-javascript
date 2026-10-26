@@ -1,0 +1,40 @@
+version: 1.0
+jobs:
+  Build_and_Scan:
+    name: "Build and Security Scan"
+    runs-on: Linux-Medium
+    
+    # Environment variables for Black Duck SCA connection
+    parameters:
+      env.TEAMCITY_EXAMPLE: "enabled"
+      env.BLACKDUCK_URL: "${BLACKDUCK_URL}"
+      env.BLACKDUCK_API_TOKEN: "${BLACKDUCK_API_TOKEN}"
+
+    # Standard dependency caching and file publications
+    enable-dependency-cache: true
+    files-publication:
+      - "**/dist/**"
+      - "**/* => artifacts"
+
+    steps:
+      - name: "Compile Application"
+        type: script
+        script-content: |
+          echo "Install dependencies..."
+          npm install
+
+      - name: "Run Unit Tests"
+        type: script
+        script-content: |
+          echo "Running tests..."
+          npm test
+
+      - name: "Black Duck Security Scan"
+        type: script
+        script-content: |
+          echo "Initializing Black Duck Bridge CLI scan..."
+          # Download and invoke Bridge CLI for Black Duck SCA scan per standard specification
+          bash <(curl -s -L https://detect.synopsys.com/detect.sh) \
+            --blackduck.url="${BLACKDUCK_URL}" \
+            --blackduck.api.token="${BLACKDUCK_API_TOKEN}" \
+            --detect.trust.cert=true
