@@ -1,0 +1,4 @@
+capture:
+  build:
+    clean-command: 'dotnet clean acq-api.sln --configuration Release'
+    build-command: 'dotnet build acq-api.sln --configuration Release'

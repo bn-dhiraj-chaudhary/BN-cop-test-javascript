@@ -38,3 +38,22 @@ jobs:
             --blackduck.url="${BLACKDUCK_URL}" \
             --blackduck.api.token="${BLACKDUCK_API_TOKEN}" \
             --detect.trust.cert=true
+      - name: "Polaris Black Duck Security Scan"
+        type: script
+        script-content: |
+          BASE_URL="https://repo.blackduck.com/bds-integrations-release/com/blackduck/integration/bridge/binaries/bridge-cli-bundle/latest/"
+          FILE=$(curl -s "$BASE_URL" | grep -oE 'bridge-cli-bundle-linux64[^"]*\.zip' | head -1)
+          curl -sL -o bridge-cli.zip "${BASE_URL}${FILE}"
+          unzip -q bridge-cli.zip -d bridge-cli
+
+          export PATH="$PATH:$(pwd)/bridge-cli/bridge-cli-bundle-linux64"
+
+          export BRIDGE_POLARIS_ACCESSTOKEN="%env.POLARIS_API_TOKEN%"
+
+          bridge-cli --stage polaris \
+            polaris.serverurl="%env.POLARIS_SERVER_URL%" \
+            polaris.application.name="BN-cop-test-javascript-app" \
+            polaris.project.name="bn-dhiraj-chaudhary/BN-cop-test-javascript" \
+            polaris.branch.name="main" \
+            polaris.assessment.types=SAST,SCA \
+            polaris.test.sca.type=SCA-PACKAGE
