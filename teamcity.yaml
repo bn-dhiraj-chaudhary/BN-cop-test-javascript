@@ -1,8 +1,7 @@
-version: 1.0
 jobs:
   Build_and_Scan:
     name: "Build and Security Scan"
-    runs-on: Linux-Medium
+  
     steps:
       - name: "Compile Application"
         type: script
