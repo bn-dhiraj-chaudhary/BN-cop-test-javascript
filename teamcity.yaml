@@ -1,8 +1,15 @@
+version: 1.0
 jobs:
   Build_and_Scan:
     name: "Build and Security Scan"
-  
+    parameters:
+      env.POLARIS_API_TOKEN: "jrgodvf36h0gncgq430cc0htnkniq3nt4atkvtl2t4e6u1bejeo11psuj7qtr4si6oripjo8d2jia"
+      env.POLARIS_SERVER_URL: "https://poc.polaris.blackduck.com/"
+    runs-on: Linux-Medium
     steps:
       - name: "Compile Application"
         type: script
+        script-content: |
+          echo "Install dependencies..."
+          npm install
       
