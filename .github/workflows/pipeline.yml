@@ -47,25 +47,3 @@ jobs:
             echo "server_url=${{ secrets.COP_SERVER_URL }}" >> "$GITHUB_OUTPUT"
             echo "access_token=${{ secrets.COP_ACCESS_TOKEN }}" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Install Polaris CLI
-        env:
-          POLARIS_SERVER_URL: ${{ steps.target.outputs.server_url }}
-          POLARIS_ACCESS_TOKEN: ${{ steps.target.outputs.access_token }}
-        run: |
-          curl -sSL -H "Authorization: Bearer $POLARIS_ACCESS_TOKEN" "$POLARIS_SERVER_URL/api/tools/polaris_cli-linux64.zip" -o polaris_cli.zip
-          unzip -q polaris_cli.zip -d polaris_cli
-          echo "$(pwd)/polaris_cli/$(ls polaris_cli)/bin" >> "$GITHUB_PATH"
-
-      - name: Run scan
-        env:
-          POLARIS_SERVER_URL: ${{ steps.target.outputs.server_url }}
-          POLARIS_ACCESS_TOKEN: ${{ steps.target.outputs.access_token }}
-        run: polaris analyze -w
-
-      - name: Upload scan report
-        uses: actions/upload-artifact@v4
-        with:
-          name: scan-results-${{ github.event.inputs.target || 'cop' }}
-          path: .synopsys/polaris/data/coverity/**/idir/output/summary.txt
-          if-no-files-found: ignore
