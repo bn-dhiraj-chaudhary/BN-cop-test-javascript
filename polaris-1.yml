@@ -5,17 +5,21 @@ project:
   revision:
     name: ${scm.git.commit}
     date: ${scm.git.commit.date}
+
 capture:
   build:
     cleanCommands:
-    - shell: [dotnet, clean, acq-api.sln, --configuration, Release]
+      - shell: [dotnet, clean, acq-api.sln, --configuration, Release]
     buildCommands:
-    - shell: [dotnet, build, acq-api.sln, --configuration, Release]
-coverity:
-    skipFiles: ["/tests"]
+      - shell: [dotnet, build, ${SOLUTION_FILE}, --configuration, ${BUILD_CONFIGURATION}]
+    coverity:
+      skipFiles: ["/tests"]
+
 analyze:
   mode: central
+
 install:
   coverity:
     version: default
+
 serverUrl: https://agilent.polaris.synopsys.com
