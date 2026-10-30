@@ -1,0 +1,5 @@
+capture:
+  build:
+    clean-command: 'dotnet clean acq-api.sln --configuration Release'
+  files:
+    exclude-regex: '(^|[/\\])tests([/\\]|$)'
